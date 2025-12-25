@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getItem, incrementViewCount, deleteItem, checkPasswordRequired } from '@/lib/db';
-import { sanitizeInput } from '@/lib/utils';
+import { sanitizeKey } from '@/lib/utils';
 
 export async function GET(
   request: NextRequest,
@@ -11,7 +11,7 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams;
     const password = searchParams.get('pwd') || undefined;
 
-    const sanitizedKey = sanitizeInput(key);
+    const sanitizedKey = sanitizeKey(key);
 
     // Check if password is required
     const passwordRequired = await checkPasswordRequired(sanitizedKey);
@@ -70,7 +70,7 @@ export async function DELETE(
 ) {
   try {
     const { key } = await params;
-    const sanitizedKey = sanitizeInput(key);
+    const sanitizedKey = sanitizeKey(key);
 
     const deleted = await deleteItem(sanitizedKey);
 

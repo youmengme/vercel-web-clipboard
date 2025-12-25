@@ -6,14 +6,14 @@ import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { sanitizeInput } from "@/lib/utils";
+import { sanitizeKey } from "@/lib/utils";
 
 export default function Home() {
   const router = useRouter();
   const [searchKey, setSearchKey] = useState("");
 
   const handleSearch = () => {
-    const sanitized = sanitizeInput(searchKey);
+    const sanitized = sanitizeKey(searchKey);
     if (sanitized) {
       router.push(`/view?key=${encodeURIComponent(sanitized)}`);
     }

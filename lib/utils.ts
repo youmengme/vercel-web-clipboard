@@ -6,21 +6,19 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function sanitizeInput(input: string): string {
+  // 只做基本的清理：去空格和限制长度
+  // SQL 注入防护由参数化查询（@vercel/postgres）提供
   return input
     .trim()
-    // Remove potential XSS and injection patterns
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-    .replace(/javascript:/gi, '')
-    .replace(/on\w+\s*=/gi, '') // Remove event handlers like onclick=
-    .replace(/<[^>]*>/g, '') // Remove all HTML tags
-    // SQL injection patterns
-    .replace(/['";\\]/g, '')
-    .replace(/--/g, '')
-    .replace(/\/\*/g, '')
-    .replace(/\*\//g, '')
-    // Limit length
     .substring(0, 10000);
+}
+
+export function sanitizeKey(input: string): string {
+  // 对 key 做更严格的限制，只保留字母数字
+  return input
+    .trim()
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .substring(0, 10);
 }
 
 export function generateKey(): string {
