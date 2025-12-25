@@ -2,6 +2,8 @@
 
 一个简单、快速的在线剪贴板应用，基于 Next.js 和 Vercel Postgres 构建。
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/youmengme/vercel-web-clipboard&env=POSTGRES_URL,POSTGRES_PRISMA_URL,POSTGRES_URL_NON_POOLING,POSTGRES_USER,POSTGRES_HOST,POSTGRES_PASSWORD,POSTGRES_DATABASE&envDescription=Required%20to%20connect%20to%20Vercel%20Postgres&envLink=https://vercel.com/docs/storage/vercel-postgres&project-name=web-clipboard&repository-name=vercel-web-clipboard)
+
 ## 功能特性
 
 - **查找内容**: 通过密钥快速获取存储的内容
