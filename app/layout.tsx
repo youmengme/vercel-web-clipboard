@@ -25,7 +25,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-            <main className="container px-4 py-8 md:px-6 md:py-12">
+            <main className="container">
               {children}
             </main>
           </div>
