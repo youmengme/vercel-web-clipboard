@@ -8,6 +8,8 @@
 
 - **查找内容**: 通过密钥快速获取存储的内容
 - **添加内容**: 创建新的剪贴板条目，可选设置访问密码
+- **过期时间**: 支持设置过期时间（最多30天），到期自动删除
+- **自动清理**: 定时清理过期数据（每小时执行一次）
 - **密码保护**: 支持为敏感内容设置访问密码
 - **查看统计**: 显示内容被查看的次数
 - **一键复制**: 快速复制内容到剪贴板
@@ -46,6 +48,9 @@ POSTGRES_USER="your-postgres-user"
 POSTGRES_HOST="your-postgres-host"
 POSTGRES_PASSWORD="your-postgres-password"
 POSTGRES_DATABASE="your-postgres-database"
+
+# Cron Job 密钥（可选，用于保护清理接口）
+CRON_SECRET="your-random-secret-string"
 ```
 
 ### 初始化数据库
@@ -53,15 +58,23 @@ POSTGRES_DATABASE="your-postgres-database"
 在 Vercel Dashboard 的 Postgres 数据库页面，点击 "Query" 并执行 `schema.sql` 中的SQL语句：
 
 ```sql
+-- 创建表（如果表已存在，先执行 ALTER 语句添加新字段）
 CREATE TABLE IF NOT EXISTS clipboard_items (
-  id VARCHAR(10) PRIMARY KEY,
+  id VARCHAR(6) PRIMARY KEY,
   content TEXT NOT NULL,
   password VARCHAR(255),
   view_count INTEGER DEFAULT 0,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  expires_at TIMESTAMP DEFAULT NULL
 );
 
+-- 如果表已存在，添加 expires_at 字段
+ALTER TABLE clipboard_items ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP;
+
+-- 创建索引
+CREATE INDEX IF NOT EXISTS idx_id_lowercase ON clipboard_items(LOWER(id));
 CREATE INDEX IF NOT EXISTS idx_created_at ON clipboard_items(created_at);
+CREATE INDEX IF NOT EXISTS idx_expires_at ON clipboard_items(expires_at);
 ```
 
 ### 运行开发服务器
@@ -78,6 +91,9 @@ npm run dev
 2. 在 Vercel 中导入项目
 3. 配置环境变量（Vercel Postgres 会自动配置）
 4. 部署完成后，在 Vercel Postgres 的 Query 页面执行 `schema.sql` 初始化数据库表
+5. **（可选）设置 CRON_SECRET 环境变量**：生成一个随机字符串作为 Cron Job 的访问密钥
+
+部署完成后，Vercel 会自动设置 Cron Job，每小时清理一次过期数据。
 
 ## 页面说明
 
@@ -95,6 +111,7 @@ npm run dev
 ### 添加页面 (/add)
 - 输入内容
 - 可选设置访问密码
+- 可选设置过期时间（最多30天，默认10分钟）
 - 生成访问密钥
 
 ## 安全特性
