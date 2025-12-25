@@ -5,7 +5,7 @@ import { sanitizeInput } from '@/lib/utils';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { content, password, expiresAt } = body;
+    const { content, password } = body;
 
     if (!content || typeof content !== 'string') {
       return NextResponse.json(
@@ -16,30 +16,8 @@ export async function POST(request: NextRequest) {
 
     const sanitizedContent = sanitizeInput(content);
 
-    // Parse expiresAt if provided
-    let expiryDate: Date | undefined;
-    if (expiresAt) {
-      expiryDate = new Date(expiresAt);
-
-      // Validate expiry date (must be at least 10 minutes in the future)
-      const now = new Date();
-      const minDateTime = new Date(now.getTime() + 10 * 60 * 1000);
-      const maxDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-      if (expiryDate < minDateTime) {
-        return NextResponse.json(
-          { error: '过期时间必须至少在10分钟之后' },
-          { status: 400 }
-        );
-      }
-
-      if (expiryDate > maxDate) {
-        return NextResponse.json(
-          { error: '过期时间不能超过30天' },
-          { status: 400 }
-        );
-      }
-    }
+    // Always set expiry to 10 minutes from now
+    const expiryDate = new Date(Date.now() + 10 * 60 * 1000);
 
     const key = await createItem(sanitizedContent, password, expiryDate);
 
