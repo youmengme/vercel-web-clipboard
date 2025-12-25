@@ -21,13 +21,14 @@ export async function POST(request: NextRequest) {
     if (expiresAt) {
       expiryDate = new Date(expiresAt);
 
-      // Validate expiry date
+      // Validate expiry date (must be at least 10 minutes in the future)
       const now = new Date();
+      const minDateTime = new Date(now.getTime() + 10 * 60 * 1000);
       const maxDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-      if (expiryDate <= now) {
+      if (expiryDate < minDateTime) {
         return NextResponse.json(
-          { error: '过期时间必须是将来的时间' },
+          { error: '过期时间必须至少在10分钟之后' },
           { status: 400 }
         );
       }

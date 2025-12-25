@@ -39,9 +39,10 @@ export function DateTimePicker({
     }
   }, []);
 
-  // Get min and max dates
+  // Get min and max dates (minimum 10 minutes from now)
   const now = new Date();
-  const minDate = now.toISOString().split("T")[0];
+  const minDateTime = new Date(now.getTime() + 10 * 60 * 1000);
+  const minDate = minDateTime.toISOString().split("T")[0];
   const maxDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
     .toISOString()
     .split("T")[0];
@@ -73,12 +74,13 @@ export function DateTimePicker({
     const date = new Date(d);
     date.setHours(parseInt(h), parseInt(m), parseInt(s), 0);
 
-    // Validate date is within 30 days
+    // Validate date is at least 10 minutes in the future and within 30 days
     const now = new Date();
+    const minDateTime = new Date(now.getTime() + 10 * 60 * 1000);
     const maxDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-    if (date <= now) {
-      return; // Date must be in the future
+    if (date < minDateTime) {
+      return; // Date must be at least 10 minutes in the future
     }
 
     if (date > maxDate) {
@@ -196,7 +198,7 @@ export function DateTimePicker({
       )}
 
       <p className="text-xs text-muted-foreground">
-        * 过期时间必须在 30 天内
+        * 过期时间必须在 10 分钟后且 30 天内
       </p>
     </div>
   );
