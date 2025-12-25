@@ -2,17 +2,19 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Lock, CheckCircle, ArrowLeft } from "lucide-react";
+import { Plus, Lock, CheckCircle, ArrowLeft, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { sanitizeInput } from "@/lib/utils";
 
 export default function AddPage() {
   const router = useRouter();
   const [content, setContent] = useState("");
   const [password, setPassword] = useState("");
+  const [expiresAt, setExpiresAt] = useState<Date | undefined>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successKey, setSuccessKey] = useState("");
@@ -28,6 +30,9 @@ export default function AddPage() {
     setError("");
 
     try {
+      // If no expiry set, default to 10 minutes from now
+      const expiry = expiresAt || new Date(Date.now() + 10 * 60 * 1000);
+
       const response = await fetch("/api/clipboard", {
         method: "POST",
         headers: {
@@ -36,17 +41,19 @@ export default function AddPage() {
         body: JSON.stringify({
           content: sanitizeInput(content),
           password: password.trim() || undefined,
+          expiresAt: expiry.toISOString(),
         }),
       });
 
       if (!response.ok) {
-        throw new Error("创建失败");
+        const data = await response.json();
+        throw new Error(data.error || "创建失败");
       }
 
       const data = await response.json();
       setSuccessKey(data.key);
     } catch (err) {
-      setError("创建失败，请重试");
+      setError(err instanceof Error ? err.message : "创建失败，请重试");
     } finally {
       setLoading(false);
     }
@@ -71,6 +78,7 @@ export default function AddPage() {
   const handleCreateNew = () => {
     setContent("");
     setPassword("");
+    setExpiresAt(undefined);
     setSuccessKey("");
     setError("");
   };
@@ -125,6 +133,24 @@ export default function AddPage() {
               </div>
             )}
 
+            {expiresAt && (
+              <div className="rounded-lg border bg-muted/50 p-4">
+                <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  过期时间: {expiresAt.toLocaleString("zh-CN")}
+                </p>
+              </div>
+            )}
+
+            {!expiresAt && (
+              <div className="rounded-lg border border-warning bg-warning/10 p-4">
+                <p className="flex items-center gap-2 text-sm text-warning-foreground">
+                  <Clock className="h-4 w-4" />
+                  默认10分钟后过期
+                </p>
+              </div>
+            )}
+
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button
                 onClick={handleViewContent}
@@ -164,7 +190,7 @@ export default function AddPage() {
             添加新内容
           </CardTitle>
           <CardDescription>
-            创建一个新的剪贴板条目，可选设置访问密码
+            创建一个新的剪贴板条目，可选设置访问密码和过期时间
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -201,6 +227,18 @@ export default function AddPage() {
             <p className="text-xs text-muted-foreground">
               留空表示无需密码即可访问
             </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <Clock className="h-4 w-4" />
+              过期时间（可选）
+            </label>
+            <DateTimePicker
+              value={expiresAt}
+              onChange={setExpiresAt}
+              disabled={loading}
+            />
           </div>
 
           {error && (
