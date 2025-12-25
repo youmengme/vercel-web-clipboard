@@ -1,5 +1,5 @@
 {
-  "name": "web-clipboard",
+  "name": "vercel-web-clipboard",
   "version": "0.1.0",
   "private": true,
   "scripts": {
