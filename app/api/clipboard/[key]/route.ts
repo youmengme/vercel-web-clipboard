@@ -53,6 +53,7 @@ export async function GET(
     return NextResponse.json({
       content: item.content,
       viewCount: item.view_count + (item.content ? 1 : 0),
+      expiresAt: item.expires_at,
       passwordRequired: false,
     });
   } catch (error) {

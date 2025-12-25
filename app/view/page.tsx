@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Copy, Trash2, Search, Eye, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Copy, Trash2, Search, Eye, CheckCircle, XCircle, Loader2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +16,7 @@ function ViewPageContent() {
 
   const [content, setContent] = useState("");
   const [viewCount, setViewCount] = useState(0);
+  const [expiresAt, setExpiresAt] = useState<Date | null>(null);
   const [loading, setLoading] = useState(!!key);
   const [error, setError] = useState("");
   const [passwordRequired, setPasswordRequired] = useState(false);
@@ -65,6 +66,9 @@ function ViewPageContent() {
         setPasswordRequired(false);
         setContent(data.content || "");
         setViewCount(data.viewCount || 0);
+        if (data.expiresAt) {
+          setExpiresAt(new Date(data.expiresAt));
+        }
       }
     } catch (err) {
       setError("网络错误，请重试");
@@ -192,43 +196,49 @@ function ViewPageContent() {
                 placeholder="内容将显示在这里"
               />
 
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 rounded-lg border border-muted bg-muted/50 px-3 py-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Eye className="h-4 w-4" />
                   查看次数: {viewCount}
                 </div>
+                {expiresAt && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Clock className="h-4 w-4" />
+                    过期时间: {expiresAt.toLocaleString("zh-CN")}
+                  </div>
+                )}
+              </div>
 
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleCopy}
-                    disabled={!content}
-                    variant="default"
-                    className="flex-1 sm:flex-none"
-                  >
-                    {copied ? (
-                      <>
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        已复制
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="mr-2 h-4 w-4" />
-                        一键复制
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    onClick={handleDelete}
-                    disabled={deleting}
-                    variant="destructive"
-                  >
-                    {deleting ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleCopy}
+                  disabled={!content}
+                  variant="default"
+                  className="flex-1 sm:flex-none"
+                >
+                  {copied ? (
+                    <>
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      已复制
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="mr-2 h-4 w-4" />
+                      一键复制
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  variant="destructive"
+                >
+                  {deleting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
+                </Button>
               </div>
             </div>
           )}
